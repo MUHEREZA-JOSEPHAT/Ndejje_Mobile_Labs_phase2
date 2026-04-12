@@ -51,8 +51,27 @@ fun MoMoCalcScreen() {
     var amountInput by remember { mutableStateOf("") }
 
     val numericAmount = amountInput.toDoubleOrNull()
-    val isError = amountInput.isNotEmpty() && numericAmount == null
-    val fee = (numericAmount ?: 0.0) * 0.03
+    val isError = when {
+        amountInput.isEmpty() -> false
+        numericAmount == null -> true
+        numericAmount < 0 -> true
+        else -> false
+    }
+
+    val errorMessage = when {
+        amountInput.isNotEmpty() && numericAmount == null ->
+           stringResource(R.string.error_numbers_only)
+        numericAmount != null && numericAmount < 0 ->
+            stringResource(R.string.Negative_Integer_Error)
+        else -> ""
+    }
+    val fee = if (!isError){ when {
+        numericAmount == null -> 0.0
+        numericAmount > 0 && numericAmount <= 2499999 -> numericAmount * 0.03
+        numericAmount >= 2500000 ->numericAmount * 0.015
+        else -> 0.0
+    }
+    }else 0.0
     val formattedFee = "UGX %,.0f".format(fee)
 
     Column(modifier = Modifier
@@ -73,15 +92,17 @@ fun MoMoCalcScreen() {
             amount = amountInput,
             onAmountChange = { amountInput = it },
             isError = isError,
+            errorMessage = errorMessage
 
         )
         Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacing_medium)))
 
-        Text(
-            text = stringResource(R.string.fee_label, formattedFee),
-            style = MaterialTheme.typography.bodyLarge,
-                    textAlign = TextAlign.Center
-        )
+            Text(
+                text = stringResource(R.string.fee_label, formattedFee),
+                style = MaterialTheme.typography.bodyLarge,
+                textAlign = TextAlign.Center
+            )
+
     }
 }
 
@@ -91,12 +112,14 @@ fun HoistedAmountInput(
     //This valuable amount is to allow state in
     onAmountChange:(String) -> Unit,  // allow s events or data to flow out
     isError: Boolean = false,
+    errorMessage: String = ""
 
 ){
     Column(){
         TextField(
             value =  amount,
             onValueChange = onAmountChange,
+
 
             label = {
                 Text(stringResource(R.string.enter_amount))
@@ -105,12 +128,13 @@ fun HoistedAmountInput(
                 if (isError) {
 
                     Text(
-                        text = stringResource(R.string.error_numbers_only),
+                        text = errorMessage,
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall
                     )
 
                 }
+
 
             }
         )
