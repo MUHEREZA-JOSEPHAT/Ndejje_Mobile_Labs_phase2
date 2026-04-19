@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -11,10 +12,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -22,7 +28,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -35,19 +44,52 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            MaterialTheme(typography = MoMoTypography) {
-                Surface(modifier = Modifier.fillMaxSize(),
-                    ) {
-
-                MoMoCalcScreen()
-            }
+            MoMoCalculatorAppTheme(typography = MoMoTypography) {                        // our custom theme (Part B)
+                Surface(modifier = Modifier.fillMaxSize()) {
+                    Scaffold(
+                        topBar = { MoMoTopBar() }
+                    ) { innerPadding ->
+                        MoMoCalcScreen(
+                            modifier = Modifier.padding(innerPadding)
+                        )
+                    }
+                }
             }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MoMoCalcScreen() {
+fun MoMoTopBar() {
+    CenterAlignedTopAppBar(
+        title = {
+            Text(
+                text = stringResource(R.string.app_title),
+                style = MaterialTheme.typography.headlineMedium
+            )
+        },
+        navigationIcon = {
+            Image(
+                painter = painterResource(id = R.drawable.momoapplogo),
+                contentDescription = "MoMo Logo",
+                modifier = Modifier
+                    .padding(start = dimensionResource(R.dimen.spacing_medium))
+                    .height(32.dp)
+                    .wrapContentWidth(),
+                contentScale = ContentScale.Fit
+            )
+        },
+        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            titleContentColor = MaterialTheme.colorScheme.onPrimary,
+            navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
+        )
+    )
+}
+
+@Composable
+fun MoMoCalcScreen(modifier: Modifier = Modifier) {
     var amountInput by remember { mutableStateOf("") }
 
     val numericAmount = amountInput.toDoubleOrNull()
@@ -68,13 +110,13 @@ fun MoMoCalcScreen() {
     val fee = if (!isError){ when {
         numericAmount == null -> 0.0
         numericAmount > 0 && numericAmount <= 2499999 -> numericAmount * 0.03
-        numericAmount >= 2500000 ->numericAmount * 0.015
+        numericAmount >= 2500000 -> numericAmount * 0.015
         else -> 0.0
     }
     }else 0.0
     val formattedFee = "UGX %,.0f".format(fee)
 
-    Column(modifier = Modifier
+    Column(modifier = modifier
         .fillMaxSize()
         .padding(dimensionResource(R.dimen.screen_padding)),
         verticalArrangement = Arrangement.Center,
@@ -84,7 +126,8 @@ fun MoMoCalcScreen() {
         Text(
             text = stringResource(R.string.app_title),
             style = MaterialTheme.typography.headlineMedium,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            color = Color.Magenta
         )
         Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacing_large)))
 
@@ -97,11 +140,18 @@ fun MoMoCalcScreen() {
         )
         Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacing_medium)))
 
+        Surface(
+            shape = MaterialTheme.shapes.medium,       // 16dp rounded corners
+            color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f),
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Text(
                 text = stringResource(R.string.fee_label, formattedFee),
                 style = MaterialTheme.typography.bodyLarge,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(16.dp)
             )
+        }
 
     }
 }
@@ -115,7 +165,7 @@ fun HoistedAmountInput(
     errorMessage: String = ""
 
 ){
-    Column(){
+    Column {
         TextField(
             value =  amount,
             onValueChange = onAmountChange,
