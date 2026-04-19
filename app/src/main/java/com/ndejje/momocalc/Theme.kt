@@ -4,6 +4,8 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.Typography
+import androidx.compose.material3.Shapes
 import com.ndejje.momocalc.ui.theme.MoMoShapes
 import com.ndejje.momocalc.ui.theme.MoMoTypography
 
@@ -35,14 +37,16 @@ private val DarkColorScheme = darkColorScheme(
 
 @Composable
 fun MoMoCalculatorAppTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(), // auto-detect by default
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    typography: Typography = MoMoTypography,
+    shapes: Shapes = MoMoShapes,
     content: @Composable () -> Unit
 ) {
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
     MaterialTheme(
-        colorScheme = LightColorScheme,
-        typography  = MoMoTypography,   // from Module 5 Typography.kt
-        shapes      = MoMoShapes,        // from Part D below
+        colorScheme = colorScheme,
+        typography  = typography,
+        shapes      = shapes,
         content     = content
     )
 }
